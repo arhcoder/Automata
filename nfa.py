@@ -5,11 +5,11 @@
 class NFA:
 
     #/ Attributes #
-    States: set = {}
-    Alphabet: set = {}
+    States: list = []
+    Alphabet: list = []
     Transitions: list = []
     Initial: str = ""
-    Finals: set = {}
+    Finals: list = []
 
     #/ Variables #
     currents: list = []
@@ -65,12 +65,12 @@ class NFA:
         '''
 
         # The values of the automata #
-        self.States = states
-        self.Alphabet = alphabet
-        self.Transitions = transitions
+        self.States = list(states)
+        self.Alphabet = list(alphabet)
+        self.Transitions = list(transitions)
         self.Initial = initial
-        self.Finals = finals
-        self.currents = [initial]
+        self.Finals = list(finals)
+        self.currents = list([initial])
 
     #* Getter:
     def __getattribute__(self, __name: str):
@@ -81,13 +81,13 @@ class NFA:
     def addState(self, state: str):
         self.States.append(state)
     def setStates(self, states: set):
-        self.States = states
+        self.States = list(states)
     
     #/ For Automata Alphabet:
     def addSymbol(self, symbol: str):
         self.Alphabet.append(symbol)
     def setAlphabet(self, alphabet: set):
-        self.Alphabet = alphabet
+        self.Alphabet = list(alphabet)
     
     #/ For Automata Transitions:
     def addTransition(self, transition: tuple):
@@ -106,7 +106,7 @@ class NFA:
     def addFinal(self, final: str):
         self.Finals.append(final)
     def setFinals(self, finals: set):
-        self.Finals = finals
+        self.Finals = list(finals)
     
 
     #? Methods:
