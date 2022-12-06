@@ -106,6 +106,22 @@ class DFA:
     
 
     #? Methods:
+    def show(self):
+        '''Prints Automata data'''
+        print()
+        print("═"*40)
+        print("\nAUTÓMATA FINITO DETERMINISTA\n")
+        print("═"*40)
+        print(f"\nEstados: {set(self.States)}")
+        print(f"Alfabeto: {set(self.Alphabet)}")
+        print(f"Estado inicial: \"{self.Initial}\"")
+        print(f"Estados finales: {set(self.Finals)}")
+        for t in self.Transitions:
+            t1 = t[1] if t[1] != "" else "λ"
+            print(f"* δ(\"{t[0]}\", \"{t1}\") = (\"{t[2]}\")")
+        print()
+        print("═"*40)
+
     def transite(self, symbol: str, printStep: bool = False):
         '''
             Recieves an actual reading symbol;
@@ -122,7 +138,7 @@ class DFA:
             if self.actual == transition[0] and symbol == transition[1]:
                 validTransitions.append(transition)
         
-        # If Automata has 0 or more than 1 transitions:
+        # If Automata has 0 or more than 1 transitions;
         if len(validTransitions) != 1:
             print(f" * Transición δ(\"{self.actual}\", \"{symbol}\") inválida!")
             self.error = True
@@ -132,7 +148,7 @@ class DFA:
             if printStep:
                 print(f" * \"{self.actual}\" lee \"{symbol}\" => \"{validTransitions[0][2]}\";")
             self.actual = validTransitions[0][2]
-
+    
     def accepts(self, string: str, stepByStep: bool = False):
         '''
             Recieves a string to read;
@@ -144,9 +160,15 @@ class DFA:
         self.actual = self.Initial
         self.error = False
 
+        # It shows the step by step path for the string:
+        if stepByStep:
+            print(f"\nPara la cadena \"{string}\":\n")
+
         # Reads letter per letter:
         for character in string:
             self.transite(character, stepByStep)
+        
+        print()
         
         # If the string was accepted or not:
         # Firstly checks if transitionsCount == word lenght,

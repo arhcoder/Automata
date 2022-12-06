@@ -1,8 +1,8 @@
 '''
-    NO-DETERMINISTIC FINITE ACCEPTORS AUTOMATONS
+    PUSHDOWN FINITE ACCEPTORS AUTOMATONS
 '''
 
-class NFA:
+class PDA:
 
     #/ Attributes #
     States: list = []
@@ -10,21 +10,23 @@ class NFA:
     Transitions: list = []
     Initial: str = ""
     Finals: list = []
+    StackAlphabet: list = []
+    InitialStack: list = ["Z"]
 
     #/ Variables #
     currents: list = []
     correct: bool = False
     error: bool = False
-
+    stack: list = []
 
     #* Constructor #
-    def __init__(self, states: set={}, alphabet: set={}, transitions: list=[], initial: str="", finals: set={}):
+    def __init__(self, states: set={}, alphabet: set={}, transitions: list=[], initial: str="", finals: set={}, stackAlphabet: set={}, initialStack: list = ["Z"]):
 
         '''
             CONSTRUCTOR:
             NOTE: ALL THE PARAMETERS ARE OPTIONAL;
             NOTE: YOU CAN ADD ELEMENTS WITH RESPECTIVE FUNCTIONS:
-            "NFA" create an instance of a No-Deterministic Finite Acceptor.
+            "PDA" create an instance of a No-Deterministic Pushdown Acceptor.
             It recieves:
 
             1. "states" (set of strings): In a set, add a strings to represent
@@ -43,15 +45,19 @@ class NFA:
 
             3. "transitions" (set of *transitionObject* (tuples)):
             *transitionObject* looks like this:
-            ("q0", "a", "q1");
+            ("q0", "a", "Z", "11Z", "q1");
             Where:
                 * "q0" is the current state of the transition;
                 * "a" is the symbol that will read on the currents state;
                 It can be ""; for lambda/epsilon transitions;
-                * "q1" is the next state after the symbol reading;
+                * "Z" is the top symbol on the stack on these transition;
+                * "11Z" is the symbols it will push on the stack:
+                In these order, th "Z" will be stay at the bottom of th stack;
+                It takes symbol per symbol, in a whole-string;
+                * "q1" is the next state after the transition;
             Example of transitions set:
-            { ("q0", "a", "q1"),  ("q0", "", "q1"),  ("q1", "a", "q1")" };
-            NOTE: ("q0", "", "q1") is a lambda/epsilon transition from
+            { ("q0", "a", "Z", "11Z", "q1"),  ("q1", "b", "1", "22", "q2")};
+            NOTE: ("q0", "", "1", "", "q1") is a lambda/epsilon transition from
             "q0" to "q1"; only valid to "" empty symbol definition;
 
             4. "initial" (string): Represents your initial state.
@@ -60,6 +66,13 @@ class NFA:
 
             5. "finals" (set of strings): Set of final states of the
             Automata; Example: {"q1, "q2", "qf"};
+
+            6. "stackAlphabet" (set of strings): Set of the valide symbols on the
+            stack future data; it is only for show the automata information.
+
+            8. "initialStack" (list of strings): The strings should be characters
+            only. This is the initial state of the stack; ["Z"] as default.
+            If you put: ["1", "2", "Z"]: "1" is on the top, and "Z" in the bottom.
 
             RETURNS AN INSTANCE OF THE AUTOMATA;
         '''
@@ -70,11 +83,14 @@ class NFA:
         self.Transitions = list(transitions)
         self.Initial = initial
         self.Finals = list(finals)
+        self.StackAlphabet = list(stackAlphabet)
+        self.InitialStack = list(initialStack)
         self.currents = list([initial])
+        self.stack = list(initialStack)
 
     #* Getter:
     def __getattribute__(self, __name: str):
-        return super(NFA, self).__getattribute__(__name)
+        return super(PDA, self).__getattribute__(__name)
     
     #* Setters:
     #/ For Automata States:
@@ -108,24 +124,40 @@ class NFA:
     def setFinals(self, finals: set):
         self.Finals = list(finals)
     
+    #/ For Automata Stack Alphabet:
+    def addStackSymbol(self, symbol: str):
+        self.StackAlphabet.append(symbol)
+    def setStackAlphabet(self, alphabet: set):
+        self.StackAlphabet = list(alphabet)
+
+    #/ For Automata Initial stack:
+    def setInitialStack(self, stack: list):
+        self.InitialStack = list(stack)
+    
 
     #? Methods:
     def show(self):
         '''Prints Automata data'''
         print()
         print("═"*40)
-        print("\nAUTÓMATA FINITO NO DETERMINISTA\n")
+        print("\nAUTÓMATA DE PILA\n")
         print("═"*40)
         print(f"\nEstados: {set(self.States)}")
         print(f"Alfabeto: {set(self.Alphabet)}")
         print(f"Estado inicial: \"{self.Initial}\"")
         print(f"Estados finales: {set(self.Finals)}")
+        print(f"Alfabeto de la pila: {set(self.StackAlphabet)}")
+        userShowStack = self.InitialStack[:]
+        userShowStack.reverse()
+        print(f"Pila inicial: {userShowStack}")
         for t in self.Transitions:
             t1 = t[1] if t[1] != "" else "λ"
-            print(f"* δ(\"{t[0]}\", \"{t1}\") = (\"{t[2]}\")")
+            t2 = t[2] if t[2] != "" else "λ"
+            t3 = t[3] if t[3] != "" else "λ"
+            print(f"* δ(\"{t[0]}\", \"{t1}\", \"{t2}\") = (\"{t3}\", \"{t[4]}\")")
         print()
         print("═"*40)
-    
+
     def transite(self, symbol: str, printStep: bool = False):
         '''
             Recieves an catual reading symbol;
@@ -133,25 +165,23 @@ class NFA:
             It changes the currents states to move;
         '''
 
+        #* Example of moving transition:
+        #* ("q0", "a", "1", "11Z" "q1");
+
         #/ The transition works like this:
-        #* If self.currents == [transition[0](currents state on the transition tuple)]
-        #* and symbol == [transition[1](letter on the transition tuple)], then:
-        #* self.currents = [transition[2](next state on the transition tuple)];
+        #* If self.currents in [transition[0](currents state on the transition tuple)]
+        #* and symbol == [transition[1](letter on the transition tuple)]:
+        #* and top stack symbol == transition[2], then:
+        #* push on the stack each character of transition[3], and:
+        #* self.currents.append([transition[4](next state on the transition tuple)]);
         validTransitions = []
         for current in self.currents:
             for transition in self.Transitions:
-                if current == transition[0] and (symbol == transition[1] or transition[1] == ""):
+                # print(self.stack[len(self.stack)-1])
+                # print(f"if ({current} == {transition[0]}) and ({symbol} == {transition[1]} or {transition[1]} == \"\") and ({self.stack[len(self.stack)-1]} == {transition[2]}):")
+                if (current == transition[0]) and (symbol == transition[1] or transition[1] == "") and (self.stack[len(self.stack)-1] == transition[2]):
+                    print(" * Transición a tomar:", transition)
                     validTransitions.append(transition)
-        
-        # Prints the path:
-        if printStep:
-            print(" * Estados actuales:", self.currents)
-            print(" * Símbolo a leer:", symbol)
-            destinies = []
-            for destiny in validTransitions:
-                destinies.append(destiny[2])
-            print(" * Destinos:", destinies)
-            print()
         
         # If Automata has 0 transitions, it will go to the "limbo"; means error;
         # But only if it is more string to read:
@@ -177,8 +207,34 @@ class NFA:
         else:
             newStates = []
             for transition in validTransitions:
+                # Prints the path:
+                if printStep:
+                    print(" * Estados actuales:", self.currents)
+                    print(" * Símbolo a leer:", symbol)
+                    userShowStack = self.stack[:]
+                    userShowStack.reverse()
+                    print(" * Pila:", userShowStack)
+                    print(" * Símbolo top en la pila:", self.stack[len(self.stack)-1])
+                    print(" * Símbolo en apilar:", transition[3])
+                    destinies = []
+                    for destiny in validTransitions:
+                        destinies.append(destiny[4])
+                    print(" * Destinos:", destinies)
+
+                    print()
+
                 # It moves to the next states:
-                newStates.append(transition[2])
+                newStates.append(transition[4])
+
+                # It pop the stack top symbol:
+                self.stack.pop()
+
+                # It push down symbols on the stack:
+                stacking = transition[3]
+                if len(stacking) > 0:
+                    stacking = reversed(stacking)
+                    for stackSymbol in stacking:
+                        self.stack.append(stackSymbol)
 
                 # If it came from a lambda transition,
                 # It has to preserve the readed symbol:
@@ -197,6 +253,7 @@ class NFA:
         '''
 
         # Initialize the currents state as the initial:
+        self.stack = list(self.InitialStack)
         self.currents = [self.Initial]
         self.error = False
         self.correct = False

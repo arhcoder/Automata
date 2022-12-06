@@ -15,6 +15,7 @@ if __name__ == "__main__":
     Automata.addTransition(("q0", "b", "q0"))
     Automata.addTransition(("q1", "a", "q1"))
     Automata.addTransition(("q1", "b", "q1"))
+    Automata.show()
 
     #/ Executes the Automata:
     while True:
@@ -24,3 +25,5 @@ if __name__ == "__main__":
             print(f"La cadena \"{word}\" SÍ es aceptada!")
         else:
             print(f"La cadena \"{word}\" NO es aceptada!")
+        print()
+        print("═"*40)

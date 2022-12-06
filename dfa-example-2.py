@@ -45,6 +45,7 @@ if __name__ == "__main__":
 
     #? Automata:
     Automata = DFA(Q, A, T, S, F)
+    Automata.show()
 
     #/ Executes the Automata:
     while True:
@@ -54,3 +55,5 @@ if __name__ == "__main__":
             print(f"La cadena \"{word}\" SÍ es aceptada!")
         else:
             print(f"La cadena \"{word}\" NO es aceptada!")
+        print()
+        print("═"*40)
