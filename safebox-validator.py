@@ -60,7 +60,7 @@ def validatePassword(password: str):
     Automata = PDA(Estados, Alfabeto, Transiciones, Inicial, Finales, Alfapila, Pila)
     Automata.show()
     print()
-    return True if Automata.accepts(password, stepByStep=False) else False
+    return True if Automata.accepts(password, stepByStep=True) else False
 
 
 #* Punto de ejecución:

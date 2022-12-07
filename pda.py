@@ -174,12 +174,18 @@ class PDA:
         #* and top stack symbol == transition[2], then:
         #* push on the stack each character of transition[3], and:
         #* self.currents.append([transition[4](next state on the transition tuple)]);
+
         validTransitions = []
         for current in self.currents:
             for transition in self.Transitions:
                 # print(self.stack[len(self.stack)-1])
                 # print(f"if ({current} == {transition[0]}) and ({symbol} == {transition[1]} or {transition[1]} == \"\") and ({self.stack[len(self.stack)-1]} == {transition[2]}):")
-                if (current == transition[0]) and (symbol == transition[1] or transition[1] == "") and (self.stack[len(self.stack)-1] == transition[2]) and (not self.error):
+                #* If it has an empty stack and pendient transitions:
+                if len(self.stack) == 0:
+                    topSymbol = ""
+                else:
+                    topSymbol = self.stack[len(self.stack)-1]
+                if (current == transition[0]) and (symbol == transition[1] or transition[1] == "") and (topSymbol == transition[2]) and (not self.error):
                     print(" * Transición a tomar:", transition)
                     validTransitions.append(transition)
         
@@ -214,7 +220,11 @@ class PDA:
                     userShowStack = self.stack[:]
                     userShowStack.reverse()
                     print(" * Pila:", userShowStack)
-                    print(" * Símbolo top en la pila:", self.stack[len(self.stack)-1])
+                    if len(self.stack) == 0:
+                        topSymbol = ""
+                    else:
+                        topSymbol = self.stack[len(self.stack)-1]
+                    print(" * Símbolo top en la pila:", topSymbol)
                     print(" * Símbolo en apilar:", transition[3])
                     destinies = []
                     for destiny in validTransitions:
@@ -230,7 +240,7 @@ class PDA:
                 if len(self.stack) > 0:
                     self.stack.pop()
                 else:
-                    self.error = True
+                    # self.error = True
                     return
 
                 # It push down symbols on the stack:
