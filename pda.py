@@ -179,14 +179,14 @@ class PDA:
             for transition in self.Transitions:
                 # print(self.stack[len(self.stack)-1])
                 # print(f"if ({current} == {transition[0]}) and ({symbol} == {transition[1]} or {transition[1]} == \"\") and ({self.stack[len(self.stack)-1]} == {transition[2]}):")
-                if (current == transition[0]) and (symbol == transition[1] or transition[1] == "") and (self.stack[len(self.stack)-1] == transition[2]):
+                if (current == transition[0]) and (symbol == transition[1] or transition[1] == "") and (self.stack[len(self.stack)-1] == transition[2]) and (not self.error):
                     print(" * Transición a tomar:", transition)
                     validTransitions.append(transition)
         
         # If Automata has 0 transitions, it will go to the "limbo"; means error;
         # But only if it is more string to read:
         takesALambdaTransition = False
-        if len(validTransitions) == 0:
+        if len(validTransitions) == 0 and len(self.stack) > 0:
             # If there is no more string:
             if symbol == "":
                 # Checks if it arrives to a final state:
@@ -227,7 +227,11 @@ class PDA:
                 newStates.append(transition[4])
 
                 # It pop the stack top symbol:
-                self.stack.pop()
+                if len(self.stack) > 0:
+                    self.stack.pop()
+                else:
+                    self.error = True
+                    return
 
                 # It push down symbols on the stack:
                 stacking = transition[3]
