@@ -1,4 +1,4 @@
-from tm import TM
+from Automata.tm import TM
 
 if __name__ == "__main__":
     
@@ -16,6 +16,12 @@ if __name__ == "__main__":
     #* Alphabet
     #? (* is Blank Symbol):
     A = {"0", "1", "2", "X", "Y", "Z", "*"}
+
+    #* Initial state:
+    S = "q0"
+
+    #* Accept states:
+    F = {"q5"}
 
     #* Transitions:
     #? (current_state, current_symbol, new_symbol, move_direction, next_state)
@@ -39,19 +45,11 @@ if __name__ == "__main__":
 
         ("q4", "Y", "Y", "R", "q4"),
         ("q4", "Z", "Z", "R", "q4"),
-
         ("q4", "*", "*", "L", "q5")
     ]
 
-    #* Initial state:
-    S = "q0"
-
-    #* Accept states:
-    F = {"q5"}
-
     #? Automata:
     Automata = TM(Q, A, T, S, F)
-
     Automata.show()
 
     #/ Executes the Automata:

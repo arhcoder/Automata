@@ -1,4 +1,4 @@
-from dfa import DFA
+from Automata.dfa import DFA
 
 if __name__ == "__main__":
 
@@ -15,15 +15,16 @@ if __name__ == "__main__":
     Automata.addTransition(("q0", "b", "q0"))
     Automata.addTransition(("q1", "a", "q1"))
     Automata.addTransition(("q1", "b", "q1"))
+    
     Automata.show()
 
     #/ Executes the Automata:
     while True:
         print()
-        word = input("Cadena: ")
+        word = input("String: ")
         if Automata.accepts(word, stepByStep=True):
-            print(f"La cadena \"{word}\" SÍ es aceptada!")
+            print(f"The string \"{word}\" IS accepted!")
         else:
-            print(f"La cadena \"{word}\" NO es aceptada!")
+            print(f"The string \"{word}\" IS NOT accepted!")
         print()
         print("═"*40)

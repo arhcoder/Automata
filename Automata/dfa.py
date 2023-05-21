@@ -1,8 +1,8 @@
 '''
-    NO-DETERMINISTIC FINITE ACCEPTORS AUTOMATONS
+    DETERMINISTIC FINITE AUTOMATONS
 '''
 
-class NFA:
+class DFA:
 
     #/ Attributes #
     States: list = []
@@ -12,8 +12,7 @@ class NFA:
     Finals: list = []
 
     #/ Variables #
-    currents: list = []
-    correct: bool = False
+    actual: str = ""
     error: bool = False
 
 
@@ -24,7 +23,7 @@ class NFA:
             CONSTRUCTOR:
             NOTE: ALL THE PARAMETERS ARE OPTIONAL;
             NOTE: YOU CAN ADD ELEMENTS WITH RESPECTIVE FUNCTIONS:
-            "NFA" create an instance of a No-Deterministic Finite Acceptor.
+            "DFA" create an instance of a Deterministic Finite Acceptor.
             It recieves:
 
             1. "states" (set of strings): In a set, add a strings to represent
@@ -45,14 +44,11 @@ class NFA:
             *transitionObject* looks like this:
             ("q0", "a", "q1");
             Where:
-                * "q0" is the current state of the transition;
-                * "a" is the symbol that will read on the currents state;
-                It can be ""; for lambda/epsilon transitions;
+                * "q0" is the actual state of the transition;
+                * "a" is the symbol that will read on the actual state;
                 * "q1" is the next state after the symbol reading;
             Example of transitions set:
-            { ("q0", "a", "q1"),  ("q0", "", "q1"),  ("q1", "a", "q1")" };
-            NOTE: ("q0", "", "q1") is a lambda/epsilon transition from
-            "q0" to "q1"; only valid to "" empty symbol definition;
+            { ("q0", "a", "q1"),  ("q0", "b", "q1"),  ("q1", "a", "q1")" };
 
             4. "initial" (string): Represents your initial state.
             If it is not included in "states", it will add on it;
@@ -70,11 +66,11 @@ class NFA:
         self.Transitions = list(transitions)
         self.Initial = initial
         self.Finals = list(finals)
-        self.currents = list([initial])
+        self.actual = initial
 
     #* Getter:
     def __getattribute__(self, __name: str):
-        return super(NFA, self).__getattribute__(__name)
+        return super(DFA, self).__getattribute__(__name)
     
     #* Setters:
     #/ For Automata States:
@@ -100,7 +96,7 @@ class NFA:
         if not initial in self.States:
             self.States.append(initial)
         self.Initial = initial
-        self.currents = [initial]
+        self.actual = initial
     
     #/ For Automata Final States:
     def addFinal(self, final: str):
@@ -114,81 +110,45 @@ class NFA:
         '''Prints Automata data'''
         print()
         print("═"*40)
-        print("\nAUTÓMATA FINITO NO DETERMINISTA\n")
+        print("\nDETERMINISTIC FINITE AUTOMATON\n")
         print("═"*40)
-        print(f"\nEstados: {set(self.States)}")
-        print(f"Alfabeto: {set(self.Alphabet)}")
-        print(f"Estado inicial: \"{self.Initial}\"")
-        print(f"Estados finales: {set(self.Finals)}")
+        print(f"\nStates: {set(self.States)}")
+        print(f"Alphabet: {set(self.Alphabet)}")
+        print(f"Initial state: \"{self.Initial}\"")
+        print(f"Final states: {set(self.Finals)}")
         for t in self.Transitions:
             t1 = t[1] if t[1] != "" else "λ"
             print(f"* δ(\"{t[0]}\", \"{t1}\") = (\"{t[2]}\")")
         print()
         print("═"*40)
-    
+
     def transite(self, symbol: str, printStep: bool = False):
         '''
-            Recieves an catual reading symbol;
-            Based on the currents states and the transitions,
-            It changes the currents states to move;
+            Recieves an actual reading symbol;
+            Based on the actual state and the transitions,
+            It changes the actual state to move;
         '''
 
         #/ The transition works like this:
-        #* If self.currents == [transition[0](currents state on the transition tuple)]
+        #* If self.actual == [transition[0](actual state on the transition tuple)]
         #* and symbol == [transition[1](letter on the transition tuple)], then:
-        #* self.currents = [transition[2](next state on the transition tuple)];
+        #* self.actual = [transition[2](next state on the transition tuple)];
         validTransitions = []
-        for current in self.currents:
-            for transition in self.Transitions:
-                if current == transition[0] and (symbol == transition[1] or transition[1] == ""):
-                    validTransitions.append(transition)
+        for transition in self.Transitions:
+            if self.actual == transition[0] and symbol == transition[1]:
+                validTransitions.append(transition)
         
-        # Prints the path:
-        if printStep:
-            print(" * Estados actuales:", self.currents)
-            print(" * Símbolo a leer:", symbol)
-            destinies = []
-            for destiny in validTransitions:
-                destinies.append(destiny[2])
-            print(" * Destinos:", destinies)
-            print()
-        
-        # If Automata has 0 transitions, it will go to the "limbo"; means error;
-        # But only if it is more string to read:
-        takesALambdaTransition = False
-        if len(validTransitions) == 0:
-            # If there is no more string:
-            if symbol == "":
-                # Checks if it arrives to a final state:
-                for current in self.currents:
-                    if current in self.Finals:
-                        self.correct = True
-                    # The state is lost; the string is not accepted:
-                    else:
-                        self.correct = True
-                        self.currents.clear
-                        self.error = True
-                return
-            else:
-                self.currents.clear
-                self.error = True
-                return
-        # It still can moves:
+        # If Automata has 0 or more than 1 transitions;
+        if len(validTransitions) != 1:
+            print(f" * Transition δ(\"{self.actual}\", \"{symbol}\") is invalid!")
+            self.error = True
+            return
+        # Else; it generates a transition:
         else:
-            newStates = []
-            for transition in validTransitions:
-                # It moves to the next states:
-                newStates.append(transition[2])
-
-                # If it came from a lambda transition,
-                # It has to preserve the readed symbol:
-                if transition[1] == "":
-                    takesALambdaTransition = True
-
-            self.currents = newStates
-            if takesALambdaTransition and len(self.currents) == 1:
-                self.transite(symbol)
-
+            if printStep:
+                print(f" * \"{self.actual}\" reads \"{symbol}\" => \"{validTransitions[0][2]}\";")
+            self.actual = validTransitions[0][2]
+    
     def accepts(self, string: str, stepByStep: bool = False):
         '''
             Recieves a string to read;
@@ -196,28 +156,19 @@ class NFA:
             Returns false if the string is not accepted;
         '''
 
-        # Initialize the currents state as the initial:
-        self.currents = [self.Initial]
+        # Initialize the actual state as the initial:
+        self.actual = self.Initial
         self.error = False
-        self.correct = False
-        
+
         # It shows the step by step path for the string:
         if stepByStep:
-            print(f"\nPara la cadena \"{string}\":\n")
-
-        # If the string is empty:
-        if len(string) == 0:
-            # Moves while it can:
-            while len(self.currents) > 0 and not self.correct:
-                self.transite("", stepByStep)
+            print(f"\nFor string \"{string}\":\n")
 
         # Reads letter per letter:
         for character in string:
             self.transite(character, stepByStep)
         
-        # Moves while it can:
-        while len(self.currents) > 0 and not self.correct:
-            self.transite("", stepByStep)
+        print()
         
         # If the string was accepted or not:
         # Firstly checks if transitionsCount == word lenght,
@@ -225,9 +176,7 @@ class NFA:
         if self.error:
             return False
 
-        for current in self.currents:
-            if current in self.Finals:
-                return True
-        if self.correct == True:
-                return True
-        return False
+        if self.actual in self.Finals:
+            return True
+        else:
+            return False

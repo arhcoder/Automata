@@ -1,4 +1,4 @@
-from tm import TM
+from Automata.tm import TM
 
 if __name__ == "__main__":
     

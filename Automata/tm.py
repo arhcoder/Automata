@@ -105,19 +105,19 @@ class TM:
     def show(self):
         '''Prints Turing Machine data'''
         print()
-        print("═"*50)
+        print("═"*40)
         print("\nTURING MACHINE\n")
-        print("═"*50)
+        print("═"*40)
         print(f"\nStates: {set(self.States)}")
         print(f"Alphabet: {set(self.Alphabet)}")
         print(f"Initial state: \"{self.Initial}\"")
         print(f"Final states: {set(self.Finals)}")
         for t in self.Transitions:
-            t1 = t[1] if t[1] != "" else "λ"
-            t2 = t[2] if t[2] != "" else "λ"
+            t1 = t[1] if t[1] != "*" else "□"
+            t2 = t[2] if t[2] != "*" else "□"
             print(f"* δ(\"{t[0]}\", \"{t1}\") = (\"{t[3]}\", \"{t2}\", \"{t[4]}\")")
         print()
-        print("═"*50)
+        print("═"*40)
     
     def transite(self, symbol: str, printStep: bool = False):
         '''
@@ -141,17 +141,17 @@ class TM:
         # Perform the transition:
         else:
             if printStep:
-                print(f" * \"{self.actual}\" reads \"{symbol}\", writes \"{validTransitions[0][2]}\", moves {validTransitions[0][3]}, goes to \"{validTransitions[0][4]}\";")
+                print(f" * \"{self.actual}\" reads \"{symbol}\", writes \"{validTransitions[0][2]}\", moves {str(validTransitions[0][3]).upper()}, goes to \"{validTransitions[0][4]}\";")
             
             self.actual = validTransitions[0][4]
             self.tape[self.head] = validTransitions[0][2]
 
             # Move the head and extend the tape if necessary:
-            if validTransitions[0][3] == "R":
+            if str(validTransitions[0][3]).upper() == "R":
                 self.head += 1
                 if self.head == len(self.tape):
                     self.tape.append("*")
-            elif validTransitions[0][3] == "L":
+            elif str(validTransitions[0][3]).upper() == "L":
                 self.head -= 1
                 if self.head < 0:
                     self.tape.insert(0, "*")
